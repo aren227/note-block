@@ -3,7 +3,7 @@ import typing
 
 from utils import time_format
 from commands.command import Command
-from player import Player
+from player.player import Player
 
 if typing.TYPE_CHECKING:
     from client import NoteblockClient

@@ -11,7 +11,7 @@ from commands.help_command import HelpCommand
 from commands.ping_command import PingCommand
 from commands.play_command import PlayCommand
 from commands.queue_command import QueueCommand
-from player import Player
+from player.player import Player
 from commands.skip_command import SkipCommand
 
 

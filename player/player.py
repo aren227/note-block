@@ -5,7 +5,7 @@ import discord
 import typing
 
 from player.mixer import Mixer
-from music import Music
+from music.music import Music
 from music_queue import MusicQueue
 
 

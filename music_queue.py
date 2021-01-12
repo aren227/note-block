@@ -1,7 +1,7 @@
 import asyncio
 import typing
 
-from music import Music
+from music.music import Music
 
 if typing.TYPE_CHECKING:
     from player import Player
