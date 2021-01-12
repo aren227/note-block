@@ -7,6 +7,7 @@ import youtube_dl
 
 from commands.command import Command
 from commands.earrape_command import EarrapeCommand
+from commands.help_command import HelpCommand
 from commands.ping_command import PingCommand
 from commands.play_command import PlayCommand
 from commands.queue_command import QueueCommand
@@ -44,6 +45,7 @@ class NoteblockClient(discord.Client):
         self.register_command(EarrapeCommand(self))
         self.register_command(QueueCommand(self))
         self.register_command(PingCommand(self))
+        self.register_command(HelpCommand(self))
 
         self.player_task = self.loop.create_task(self.player_task())
 
@@ -69,6 +71,9 @@ class NoteblockClient(discord.Client):
 
     def register_command(self, command: Command):
         self.commands[command.get_base_command()] = command
+
+    def get_commands(self) -> typing.List[Command]:
+        return list(self.commands.values())
 
     async def on_message(self, message: discord.Message):
         if message.author == self.user:
