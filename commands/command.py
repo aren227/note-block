@@ -21,7 +21,3 @@ class Command:
 
     async def execute(self, message: discord.Message, args: typing.List[str]):
         pass
-
-    # Called after execute
-    async def on_message(self, message: discord.Message):
-        pass

@@ -15,6 +15,7 @@ from commands.queue_command import QueueCommand
 from database import Database
 from player.player import Player
 from commands.skip_command import SkipCommand
+from selector import Selector
 
 ytdl = youtube_dl.YoutubeDL({
     'format': 'bestaudio/best',
@@ -51,6 +52,8 @@ class NoteblockClient(discord.Client):
         self.register_command(PlayListCommand(self))
 
         self.database = Database(self)
+
+        self.selector = Selector(self)
 
         # self.player_task = self.loop.create_task(self.player_task())
 
@@ -94,8 +97,7 @@ class NoteblockClient(discord.Client):
                 if not success:
                     await message.channel.send(self.commands[base].get_help())
 
-        for key in self.commands:
-            await self.commands[key].on_message(message)
+        await self.selector.on_message(message)
 
     """
     async def player_task(self):

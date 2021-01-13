@@ -2,7 +2,6 @@ import functools
 
 import discord
 import typing
-import youtube_dl
 import re
 
 from utils import time_format
@@ -18,45 +17,11 @@ class PlayCommand(Command):
     def __init__(self, client: 'NoteblockClient'):
         super().__init__(client)
 
-        self.member_queries: typing.Dict[discord.Member, QueryResults] = {}
-
     def get_base_command(self) -> str:
         return "p"
 
     def get_help(self) -> str:
         return ";p [검색어/링크] : 유튜브에서 영상을 검색한 뒤 음악을 재생합니다."
-
-    def set_search_results(self, member: discord.Member, results: 'QueryResults'):
-        self.member_queries[member] = results
-
-    def get_searched_results_string(self, results: typing.List[dict]) -> str:
-        msg = ""
-        for i in range(len(results)):
-            msg += "{}. {}\n".format(i + 1, results[i]['title'])
-        msg += "재생을 원하는 영상의 번호를 입력해주세요."
-        return msg
-
-    def has_queried(self, member: discord.Member):
-        return member in self.member_queries
-
-    def get_ith_video(self, member: discord.Member, index: int) -> typing.Optional[dict]:
-        if member not in self.member_queries:
-            return None
-
-        if index < 1 or len(self.member_queries[member].results) < index:
-            return None
-
-        result = self.member_queries[member].results[index - 1]
-        return result
-
-    def get_query_and_response_messages(self, member: discord.Member) -> typing.Optional[typing.Tuple[discord.Message, discord.Message]]:
-        if member not in self.member_queries:
-            return None
-
-        return self.member_queries[member].query_message, self.member_queries[member].response_message
-
-    def pop_search_results(self, member: discord.Member):
-        self.member_queries.pop(member, None)
 
     def create_embed(self, member: discord.Member, video: dict) -> discord.Embed:
         embed = discord.Embed(title=video['title'], url="https://www.youtube.com/watch?v={}".format(video['id']))
@@ -94,26 +59,12 @@ class PlayCommand(Command):
         results = await self.client.loop.run_in_executor(None, partial)
         results = list(results['entries'])
 
-        response = await message.channel.send(self.get_searched_results_string(results))
-
-        self.set_search_results(message.author, QueryResults(message, response, results))
-
+        self.client.selector.query_to_member(message.guild, message.author, [video['title'] for video in results],
+                                             results, self.add_video, message.channel,
+                                             "재생을 원하는 영상의 번호를 입력해주세요.")
         return True
 
-    async def on_message(self, message: discord.Message):
-        if not message.content.isdigit():
-            return
-
-        if not self.has_queried(message.author):
-            return
-
-        video = self.get_ith_video(message.author, int(message.content))
-        if video is None:
-            return
-
-        await self.add_video(video, message)
-
-    async def add_video(self, video: dict, message: discord.Message):
+    async def add_video(self, video: dict, message: discord.Message, ):
         # Streaming video
         if video['duration'] is None:
             await message.channel.send("해당 영상은 재생할 수 없습니다.")
@@ -121,28 +72,12 @@ class PlayCommand(Command):
 
         await self.client.try_to_connect_player(message.guild, message.author, message.channel)
 
-        if self.has_queried(message.author):
-            query_message, response_message = self.get_query_and_response_messages(message.author)
-            await query_message.delete()
-            await response_message.edit(content="", embed=self.create_embed(message.author, video))
-        else:
-            await message.channel.send(embed=self.create_embed(message.author, video))
-
-        await message.delete()
+        await message.channel.send(embed=self.create_embed(message.author, video))
 
         player = self.client.get_player(message.guild)
         if player.is_connected():
             player.get_music_queue().add_music(
-                YoutubeMusic(ytdl, video['id'], video['title'],
-                             int(video['duration'])))
+                YoutubeMusic(video['id'], video['title'], int(video['duration'])))
 
             if not player.is_playing_music():
                 player.play_next_music()
-
-
-class QueryResults:
-
-    def __init__(self, query_message: discord.Message, response_message: discord.Message, results: typing.List[dict]):
-        self.query_message = query_message
-        self.response_message = response_message
-        self.results = results
