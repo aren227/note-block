@@ -20,6 +20,8 @@ class Mixer(Thread):
 
         self.player = player
 
+        self.speaking = True
+
         self.layers: typing.Dict[str, Layer] = {}
         self.earrape: bool = False
 
@@ -27,22 +29,23 @@ class Mixer(Thread):
         self.add_layer(Layer(self, "MUSIC", 1))
         self.add_layer(Layer(self, "EMOJI", 5))
 
-    def _read(self) -> bytes:
-        # st = time.time()
-
+    def _read(self) -> typing.Tuple[bytes, bool]:
+        # At least one layer is playing
+        should_send_packet = False
         buf = np.zeros(960 * 2, dtype=np.int)
+
         for key in self.layers:
-            buf = self.layers[key].read_buffer(buf)
+            buf, layer_playing = self.layers[key].read_buffer(buf)
+
+            should_send_packet |= layer_playing
 
         if self.earrape:
             buf *= 1200
 
         # Volume 25%
         final_buf = np.clip(buf // 4, -32768, 32767).astype(dtype='<i2').tobytes()
-        """elapsed = int((time.time() - st) * 1000)
-        if elapsed > 0:
-            print(elapsed, "ms")"""
-        return final_buf
+
+        return final_buf, should_send_packet
 
     def add_layer(self, layer: Layer):
         if layer.get_name() in self.layers:
@@ -64,7 +67,7 @@ class Mixer(Thread):
 
     def audio_source_finished(self, layer: Layer):
         if layer.get_name() == "MUSIC":
-            self.player.clear_current_music()
+            self.player.play_next_music()
 
     def is_earraped(self):
         return self.earrape
@@ -87,7 +90,15 @@ class Mixer(Thread):
                 time.sleep(0.02)
                 continue
 
-            self.player.voice_client.send_audio_packet(self._read(), encode=True)
+            buf, should_send = self._read()
+            if should_send:
+                self.player.voice_client.send_audio_packet(buf, encode=True)
+
+            if self.speaking != should_send:
+                self.player.voice_client.ws.speak(1 if should_send else 0)
+                self.speaking = should_send
+
+            # Always increase this to sync with time_start
             packet_sent += 1
 
             # Send one more packet to fill discord server's buffer

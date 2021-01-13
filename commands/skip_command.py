@@ -29,7 +29,7 @@ class SkipCommand(Command):
         player = self.client.get_player(message.guild)
         if player.is_playing_music():
             await message.channel.send("**{}**을 건너뜁니다.".format(player.get_current_music().get_title()))
-            player.clear_current_music()
+            player.play_next_music()
         else:
             await message.channel.send("재생 중인 음악이 없습니다.")
 

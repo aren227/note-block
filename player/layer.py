@@ -32,7 +32,10 @@ class Layer:
     def clear_audio_sources(self):
         self.audio_sources.clear()
 
-    def read_buffer(self, buffer: np.ndarray) -> np.ndarray:
+    def read_buffer(self, buffer: np.ndarray) -> typing.Tuple[np.ndarray, bool]:
+        # At least one audio is playing
+        playing = False
+
         for i in range(len(self.audio_sources) - 1, -1, -1):
             buf = self.audio_sources[i].read()
 
@@ -43,4 +46,6 @@ class Layer:
                 continue
 
             buffer += buf
-        return buffer
+            playing = True
+
+        return buffer, playing

@@ -120,7 +120,10 @@ class PlayCommand(Command):
 
         player = self.client.get_player(message.guild)
         if player.is_connected():
-            await player.get_music_queue().add_music(YoutubeMusic(self.ytdl, "https://www.youtube.com/watch?v={}".format(video['id']), video['title'], int(video['duration'])))
+            player.get_music_queue().add_music(YoutubeMusic(self.ytdl, "https://www.youtube.com/watch?v={}".format(video['id']), video['title'], int(video['duration'])))
+
+            if not player.is_playing_music():
+                player.play_next_music()
 
 
 class QueryResults:

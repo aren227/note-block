@@ -17,7 +17,7 @@ class MusicQueue:
     def is_empty(self) -> bool:
         return len(self.queue) == 0
 
-    async def add_music(self, music: Music):
+    def add_music(self, music: Music):
         self.queue.append(music)
 
     def next_music(self) -> typing.Optional[Music]:

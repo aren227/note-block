@@ -70,27 +70,21 @@ class Player:
         total_time += self.music_queue.get_remaining_time()
         return total_time
 
-    async def try_to_play_music(self):
+    def play_next_music(self):
         if not self.is_connected():
             return
 
-        if self.is_playing_music():
-            return
+        self.current_music = self.music_queue.next_music()
 
-        music = self.music_queue.next_music()
-        if music is None:
-            return
-
-        self.current_music = music
-
-        print("Play", self.current_music.get_title())
-
-        try:
-            music.start()
-            self.mixer.add_audio_source("MUSIC", music)
-        except:
-            traceback.print_exc()
-            # TODO: Handle exception properly
+        if self.current_music is not None:
+            try:
+                self.current_music.start()
+                self.mixer.add_audio_source("MUSIC", self.current_music)
+            except:
+                traceback.print_exc()
+                # TODO: Handle exception properly
+        else:
+            self.clear_current_music()
 
     def get_mixer(self) -> typing.Optional[Mixer]:
         return self.mixer
