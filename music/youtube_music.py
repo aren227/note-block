@@ -10,13 +10,13 @@ from music.music import Music
 
 class YoutubeMusic(Music):
 
-    def __init__(self, ytdl: youtube_dl.YoutubeDL, url: str, title: str, duration: int):
+    def __init__(self, ytdl: youtube_dl.YoutubeDL, video_id: str, title: str, duration: int):
         super().__init__(title, duration)
         self.ytdl = ytdl
-        self.url = url
+        self.video_id = video_id
 
     def _create_audio_source(self) -> discord.AudioSource:
-        processed_info = self.ytdl.extract_info(self.url, download=False)
+        processed_info = self.ytdl.extract_info("https://www.youtube.com/watch?v={}".format(self.video_id), download=False)
 
         best_url = None
         best_bitrate = 0
@@ -32,3 +32,6 @@ class YoutubeMusic(Music):
             best_url,
             before_options='-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
         )
+
+    def get_id(self) -> str:
+        return "youtube:" + self.video_id

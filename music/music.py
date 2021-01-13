@@ -24,3 +24,6 @@ class Music(BufferedAudio):
 
     def _create_audio_source(self):
         raise NotImplementedError
+    
+    def get_id(self):
+        raise NotImplementedError
