@@ -5,18 +5,18 @@ import discord
 import typing
 import youtube_dl
 
+from client import ytdl
 from music.music import Music
 
 
 class YoutubeMusic(Music):
 
-    def __init__(self, ytdl: youtube_dl.YoutubeDL, video_id: str, title: str, duration: int):
+    def __init__(self, video_id: str, title: str, duration: int):
         super().__init__(title, duration)
-        self.ytdl = ytdl
         self.video_id = video_id
 
     def _create_audio_source(self) -> discord.AudioSource:
-        processed_info = self.ytdl.extract_info("https://www.youtube.com/watch?v={}".format(self.video_id), download=False)
+        processed_info = ytdl.extract_info("https://www.youtube.com/watch?v={}".format(self.video_id), download=False)
 
         best_url = None
         best_bitrate = 0

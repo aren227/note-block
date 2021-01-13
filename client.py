@@ -12,8 +12,25 @@ from commands.ping_command import PingCommand
 from commands.play_command import PlayCommand
 from commands.play_list_command import PlayListCommand
 from commands.queue_command import QueueCommand
+from database import Database
 from player.player import Player
 from commands.skip_command import SkipCommand
+
+ytdl = youtube_dl.YoutubeDL({
+    'format': 'bestaudio/best',
+    'extractaudio': True,
+    'audioformat': 'mp3',
+    'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
+    'restrictfilenames': True,
+    'noplaylist': True,
+    'nocheckcertificate': True,
+    'ignoreerrors': False,
+    'logtostderr': False,
+    'quiet': True,
+    'no_warnings': True,
+    'default_search': 'auto',
+    'source_address': '0.0.0.0',
+})
 
 
 class NoteblockClient(discord.Client):
@@ -21,33 +38,19 @@ class NoteblockClient(discord.Client):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.ytdl = youtube_dl.YoutubeDL({
-            'format': 'bestaudio/best',
-            'extractaudio': True,
-            'audioformat': 'mp3',
-            'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
-            'restrictfilenames': True,
-            'noplaylist': True,
-            'nocheckcertificate': True,
-            'ignoreerrors': False,
-            'logtostderr': False,
-            'quiet': True,
-            'no_warnings': True,
-            'default_search': 'auto',
-            'source_address': '0.0.0.0',
-        })
-
         self.players: typing.Dict[discord.Guild, Player] = {}
 
         self.commands: typing.Dict[str, Command] = {}
 
-        self.register_command(PlayCommand(self, self.ytdl))
+        self.register_command(PlayCommand(self))
         self.register_command(SkipCommand(self))
         self.register_command(EarrapeCommand(self))
         self.register_command(QueueCommand(self))
         self.register_command(PingCommand(self))
         self.register_command(HelpCommand(self))
         self.register_command(PlayListCommand(self))
+
+        self.database = Database(self)
 
         # self.player_task = self.loop.create_task(self.player_task())
 

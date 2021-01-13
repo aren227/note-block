@@ -17,7 +17,7 @@ class PlayListCommand(Command):
         return "l"
 
     def get_help(self) -> str:
-        return ";l create [이름] : 새로운 플레이리스트를 생성합니다.\n" \
+        return ";l new [이름] : 새로운 플레이리스트를 생성합니다.\n" \
                ";l add [검색어/링크] : 유튜브에서 영상을 검색한 뒤 플레이리스트에 추가합니다.\n" \
                ";l delete [검색어/링크] : 플레이리스트에서 음악을 제거합니다.\n" \
                ";l [이름] : 플레이리스트의 곡 목록을 확인합니다.\n" \
@@ -27,7 +27,7 @@ class PlayListCommand(Command):
         if len(args) == 0:
             # TODO: Display all playlists
             raise NotImplementedError
-        elif args[0] == "create":
+        elif args[0] == "new":
             # TODO: Create a new playlist
             raise NotImplementedError
         elif args[0] == "add":

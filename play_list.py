@@ -1,17 +1,18 @@
 import typing
 
 import discord
+from bson import ObjectId
 
 from music.music import Music
 
 
 class PlayList:
 
-    def __init__(self, guild: discord.Guild, title: str):
+    def __init__(self, guild: discord.Guild, title: str, play_list: typing.List[Music], db_id: typing.Optional[ObjectId] = None):
         self.guild = guild
         self.title = title
-
-        self.play_list: typing.List[Music] = []
+        self.play_list: typing.List[Music] = play_list
+        self.db_id = db_id
 
     def get_title(self) -> str:
         return self.title

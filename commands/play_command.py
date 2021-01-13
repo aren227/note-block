@@ -10,15 +10,13 @@ from commands.command import Command
 from music.youtube_music import YoutubeMusic
 
 if typing.TYPE_CHECKING:
-    from client import NoteblockClient
+    from client import NoteblockClient, ytdl
 
 
 class PlayCommand(Command):
 
-    def __init__(self, client: 'NoteblockClient', ytdl: youtube_dl.YoutubeDL):
+    def __init__(self, client: 'NoteblockClient'):
         super().__init__(client)
-
-        self.ytdl = ytdl
 
         self.member_queries: typing.Dict[discord.Member, QueryResults] = {}
 
@@ -87,12 +85,12 @@ class PlayCommand(Command):
         # Add to queue directly
         if search_str.startswith("https://www.youtube.com/watch?v="):
             vid = re.search(r'v=([0-9a-zA-Z]+)', search_str).group(1)
-            partial = functools.partial(self.ytdl.extract_info, vid, download=False, process=False)
+            partial = functools.partial(ytdl.extract_info, vid, download=False, process=False)
             result = await self.client.loop.run_in_executor(None, partial)
             await self.add_video(result, message)
             return True
 
-        partial = functools.partial(self.ytdl.extract_info, "ytsearch5: {}".format(search_str), download=False, process=False)
+        partial = functools.partial(ytdl.extract_info, "ytsearch5: {}".format(search_str), download=False, process=False)
         results = await self.client.loop.run_in_executor(None, partial)
         results = list(results['entries'])
 
@@ -135,7 +133,7 @@ class PlayCommand(Command):
         player = self.client.get_player(message.guild)
         if player.is_connected():
             player.get_music_queue().add_music(
-                YoutubeMusic(self.ytdl, video['id'], video['title'],
+                YoutubeMusic(ytdl, video['id'], video['title'],
                              int(video['duration'])))
 
             if not player.is_playing_music():
