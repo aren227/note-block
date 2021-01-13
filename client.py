@@ -10,6 +10,7 @@ from commands.earrape_command import EarrapeCommand
 from commands.help_command import HelpCommand
 from commands.ping_command import PingCommand
 from commands.play_command import PlayCommand
+from commands.play_list_command import PlayListCommand
 from commands.queue_command import QueueCommand
 from player.player import Player
 from commands.skip_command import SkipCommand
@@ -46,8 +47,9 @@ class NoteblockClient(discord.Client):
         self.register_command(QueueCommand(self))
         self.register_command(PingCommand(self))
         self.register_command(HelpCommand(self))
+        self.register_command(PlayListCommand(self))
 
-        self.player_task = self.loop.create_task(self.player_task())
+        # self.player_task = self.loop.create_task(self.player_task())
 
     def guild_has_player(self, guild: discord.Guild) -> bool:
         return guild in self.players
@@ -92,8 +94,10 @@ class NoteblockClient(discord.Client):
         for key in self.commands:
             await self.commands[key].on_message(message)
 
+    """
     async def player_task(self):
         while not self.is_closed():
             features = [asyncio.ensure_future(self.players[key].try_to_play_music()) for key in self.players]
             await asyncio.gather(*features)
             await asyncio.sleep(0.5)
+    """
