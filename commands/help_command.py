@@ -10,7 +10,7 @@ if typing.TYPE_CHECKING:
 class HelpCommand(Command):
 
     def __init__(self, client: 'NoteblockClient'):
-        super(HelpCommand, self).__init__(client)
+        super().__init__(client)
 
     def get_base_command(self) -> str:
         return "h"

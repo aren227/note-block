@@ -10,7 +10,7 @@ if typing.TYPE_CHECKING:
 class PingCommand(Command):
 
     def __init__(self, client: 'NoteblockClient'):
-        super(PingCommand, self).__init__(client)
+        super().__init__(client)
 
     def get_base_command(self) -> str:
         return "ping"
@@ -26,7 +26,10 @@ class PingCommand(Command):
             return
         player = self.client.get_player(message.guild)
         try:
-            await message.channel.send("지연 시간: **{}ms** / 평균 지연 시간: **{}ms**.".format(int(player.voice_client.latency * 1000), int(player.voice_client.average_latency * 1000)))
+            msg = "지연 시간: **{}ms** / 평균 지연 시간: **{}ms**\n".format(int(player.voice_client.latency * 1000), int(player.voice_client.average_latency * 1000))
+            if player.get_current_music() is not None:
+                msg += "평균 음악 버퍼 크기: **{:.2f}**\n".format(player.get_current_music().buffer_size_average.get_average())
+            await message.channel.send(msg)
         except Exception:
             await message.channel.send("지연 시간 데이터가 충분하지 않습니다. 조금 뒤에 다시 시도해주세요.")
         return True

@@ -12,7 +12,7 @@ if typing.TYPE_CHECKING:
 class QueueCommand(Command):
 
     def __init__(self, client: 'NoteblockClient'):
-        super(QueueCommand, self).__init__(client)
+        super().__init__(client)
 
     def get_base_command(self) -> str:
         return "q"

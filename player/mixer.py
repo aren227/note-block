@@ -1,16 +1,23 @@
+import time
+from threading import Thread
+
 import discord
 import numpy as np
 import typing
 
+from music.buffered_audio import BufferedAudio
 from player.layer import Layer
+from utils.moving_average import MovingAverage
 
 if typing.TYPE_CHECKING:
-    from player import Player
+    from player.player import Player
 
 
-class Mixer(discord.AudioSource):
+class Mixer(Thread):
 
     def __init__(self, player: 'Player'):
+        super().__init__()
+
         self.player = player
 
         self.layers: typing.Dict[str, Layer] = {}
@@ -20,7 +27,7 @@ class Mixer(discord.AudioSource):
         self.add_layer(Layer(self, "MUSIC", 1))
         self.add_layer(Layer(self, "EMOJI", 5))
 
-    def read(self):
+    def _read(self) -> bytes:
         # st = time.time()
 
         buf = np.zeros(960 * 2, dtype=np.int)
@@ -37,16 +44,13 @@ class Mixer(discord.AudioSource):
             print(elapsed, "ms")"""
         return final_buf
 
-    def is_opus(self):
-        return False
-
     def add_layer(self, layer: Layer):
         if layer.get_name() in self.layers:
             raise ValueError("Same name of layer already exists.")
 
         self.layers[layer.get_name()] = layer
 
-    def add_audio_source(self, layer_name: str, audio_source: discord.AudioSource):
+    def add_audio_source(self, layer_name: str, audio_source: BufferedAudio):
         if layer_name not in self.layers:
             raise ValueError("Layer {} not exists.".format(layer_name))
 
@@ -58,7 +62,7 @@ class Mixer(discord.AudioSource):
 
         self.layers[layer_name].clear_audio_sources()
 
-    def audio_source_finished(self, layer: Layer, audio_source: discord.AudioSource):
+    def audio_source_finished(self, layer: Layer):
         if layer.get_name() == "MUSIC":
             self.player.clear_current_music()
 
@@ -67,3 +71,26 @@ class Mixer(discord.AudioSource):
 
     def set_earrape(self, earrape):
         self.earrape = earrape
+
+    def run(self):
+        expected_packet_loss_rate = 0.001
+        target_packet_buffer = 5
+
+        packet_sent = 0
+        time_start = time.time()
+        packet_loss_timer = time.time()
+
+        while self.player.voice_client.is_connected():
+            target_packet_sent = int((time.time() - time_start) * 50)  # 1 packet = 20ms
+
+            if packet_sent > target_packet_sent + target_packet_buffer:
+                time.sleep(0.02)
+                continue
+
+            self.player.voice_client.send_audio_packet(self._read(), encode=True)
+            packet_sent += 1
+
+            # Send one more packet to fill discord server's buffer
+            if time.time() - packet_loss_timer >= (1 / expected_packet_loss_rate) * 0.02:
+                packet_sent -= 1
+                packet_loss_timer = time.time()

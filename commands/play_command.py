@@ -15,7 +15,7 @@ if typing.TYPE_CHECKING:
 class PlayCommand(Command):
 
     def __init__(self, client: 'NoteblockClient', ytdl: youtube_dl.YoutubeDL):
-        super(PlayCommand, self).__init__(client)
+        super().__init__(client)
 
         self.ytdl = ytdl
 

@@ -10,7 +10,7 @@ if typing.TYPE_CHECKING:
 class EarrapeCommand(Command):
 
     def __init__(self, client: 'NoteblockClient'):
-        super(EarrapeCommand, self).__init__(client)
+        super().__init__(client)
 
     def get_base_command(self) -> str:
         return "e"

@@ -18,7 +18,7 @@ class Player:
         self.current_music: typing.Optional[Music] = None
         self.music_queue: MusicQueue = MusicQueue(self)
 
-        self.mixer: Mixer = Mixer(self)
+        self.mixer: typing.Optional[Mixer] = None
 
         self.voice_client: typing.Optional[discord.VoiceClient] = None
 
@@ -31,7 +31,6 @@ class Player:
         if self.guild != voice_channel.guild:
             raise ValueError("Can't connect to voice channel of different guild!")
         self.voice_client = await voice_channel.connect()
-        self.voice_client.play(self.mixer)
 
         # Inject custom encoder
         encoder = discord.opus.Encoder()
@@ -42,6 +41,9 @@ class Player:
         encoder.set_signal_type('music')
 
         self.voice_client.encoder = encoder
+
+        self.mixer = Mixer(self)
+        self.mixer.start()
 
     async def disconnect(self):
         await self.voice_client.disconnect()
@@ -64,7 +66,7 @@ class Player:
     def get_total_time_left(self) -> int:
         total_time = 0
         if self.current_music is not None:
-            total_time += self.current_music.get_left_time()
+            total_time += self.current_music.get_time_left()
         total_time += self.music_queue.get_remaining_time()
         return total_time
 
@@ -84,12 +86,11 @@ class Player:
         print("Play", self.current_music.get_title())
 
         try:
-            audio_source = await music.create_audio_source(self.loop)
-
-            self.mixer.add_audio_source("MUSIC", audio_source)
+            music.start()
+            self.mixer.add_audio_source("MUSIC", music)
         except:
             traceback.print_exc()
             # TODO: Handle exception properly
 
-    def get_mixer(self):
+    def get_mixer(self) -> typing.Optional[Mixer]:
         return self.mixer
