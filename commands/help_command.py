@@ -24,5 +24,7 @@ class HelpCommand(Command):
     async def execute(self, message: discord.Message, args: typing.List[str]):
         msg = "지원되는 명령어 목록:"
         for command in self.client.get_commands():
-            msg += command.get_help() + "\n"
+            msg += "\n" + command.get_help()
         await message.channel.send(msg)
+
+        return True
