@@ -20,8 +20,6 @@ class Mixer(Thread):
 
         self.player = player
 
-        self.speaking = True
-
         self.layers: typing.Dict[str, Layer] = {}
         self.earrape: bool = False
 
@@ -93,10 +91,6 @@ class Mixer(Thread):
             buf, should_send = self._read()
             if should_send:
                 self.player.voice_client.send_audio_packet(buf, encode=True)
-
-            if self.speaking != should_send:
-                self.player.voice_client.ws.speak(1 if should_send else 0)
-                self.speaking = should_send
 
             # Always increase this to sync with time_start
             packet_sent += 1
