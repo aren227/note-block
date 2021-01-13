@@ -25,8 +25,7 @@ class PlayListCommand(Command):
 
     async def execute(self, message: discord.Message, args: typing.List[str]) -> bool:
         if len(args) == 0:
-            # TODO: Display all playlists
-            raise NotImplementedError
+            results = self.client
         elif args[0] == "new":
             # TODO: Create a new playlist
             raise NotImplementedError

@@ -52,7 +52,7 @@ class PlayCommand(Command):
             vid = re.search(r'v=([0-9a-zA-Z]+)', search_str).group(1)
             partial = functools.partial(ytdl.extract_info, vid, download=False, process=False)
             result = await self.client.loop.run_in_executor(None, partial)
-            await self.add_video(result, message)
+            await self.add_video(result, message.author, message.channel)
             return True
 
         partial = functools.partial(ytdl.extract_info, "ytsearch5: {}".format(search_str), download=False, process=False)
@@ -64,17 +64,17 @@ class PlayCommand(Command):
                                              "재생을 원하는 영상의 번호를 입력해주세요.")
         return True
 
-    async def add_video(self, video: dict, message: discord.Message, ):
+    async def add_video(self, video: dict, member: discord.Member, channel: discord.TextChannel):
         # Streaming video
         if video['duration'] is None:
-            await message.channel.send("해당 영상은 재생할 수 없습니다.")
+            await channel.send("해당 영상은 재생할 수 없습니다.")
             return
 
-        await self.client.try_to_connect_player(message.guild, message.author, message.channel)
+        await self.client.try_to_connect_player(channel.guild, member, channel)
 
-        await message.channel.send(embed=self.create_embed(message.author, video))
+        await channel.send(embed=self.create_embed(member, video))
 
-        player = self.client.get_player(message.guild)
+        player = self.client.get_player(channel.guild)
         if player.is_connected():
             player.get_music_queue().add_music(
                 YoutubeMusic(video['id'], video['title'], int(video['duration'])))

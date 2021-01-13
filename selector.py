@@ -17,7 +17,7 @@ class Selector:
                               member: discord.Member,
                               str_list: typing.List[str],
                               data_list: typing.List[object],
-                              callback: typing.Callable[[object, discord.Message], None],
+                              callback: typing.Callable[[object, discord.Member, discord.TextChannel], typing.Awaitable[None]],
                               channel: discord.TextChannel,
                               hint: str):
         if len(str_list) == 0:
@@ -26,17 +26,21 @@ class Selector:
         if len(str_list) != len(data_list):
             raise ValueError("Length of data_list must be equal to length of str_list")
 
+        # No need to query
+        if len(str_list) == 1:
+            await callback(data_list[0], member, channel)
+
         if guild not in self.guilds:
             self.guilds[guild] = {}
-
-        self.guilds[guild][member] = Choices(data_list, callback)
 
         msg = ""
         for i in range(len(str_list)):
             msg += "**{}*. {}\n".format(i + 1, str_list[i])
         msg += hint
 
-        await channel.send(msg)
+        query_message = await channel.send(msg)
+
+        self.guilds[guild][member] = Choices(data_list, callback, query_message)
 
     async def on_message(self, message: discord.Message):
         if len(message.content) > 2 or not message.content.isdigit():
@@ -51,7 +55,7 @@ class Selector:
         if index < 1 or choices.length() < index:
             return
 
-        choices.callback(choices.data_list[index - 1], message)
+        await choices.callback(choices.data_list[index - 1], message.author, message.channel)
 
         self.guilds[message.guild].pop(message.author, None)
 
@@ -61,8 +65,8 @@ class Selector:
 
 class Choices:
 
-    def __init__(self, data_list: typing.List, callback: typing.Callable[[object, discord.Message], None]
-                 , query_message: discord.Message):
+    def __init__(self, data_list: typing.List, callback: typing.Callable[[object, discord.Member, discord.TextChannel], typing.Awaitable[None]],
+                 query_message: discord.Message):
         self.data_list = data_list
         self.callback = callback
         self.query_message = query_message
