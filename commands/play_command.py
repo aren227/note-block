@@ -3,6 +3,7 @@ import functools
 import discord
 import typing
 import youtube_dl
+import re
 
 from utils import time_format
 from commands.command import Command
@@ -25,7 +26,7 @@ class PlayCommand(Command):
         return "p"
 
     def get_help(self) -> str:
-        return ";p [검색어] : 유튜브에서 영상을 검색한 뒤 음악을 재생합니다."
+        return ";p [검색어/링크] : 유튜브에서 영상을 검색한 뒤 음악을 재생합니다."
 
     def set_search_results(self, member: discord.Member, results: 'QueryResults'):
         self.member_queries[member] = results
@@ -83,6 +84,14 @@ class PlayCommand(Command):
 
         search_str = " ".join(args)
 
+        # Add to queue directly
+        if search_str.startswith("https://www.youtube.com/watch?v="):
+            vid = re.search(r'v=([0-9a-zA-Z]+)', search_str).group(1)
+            partial = functools.partial(self.ytdl.extract_info, vid, download=False, process=False)
+            result = await self.client.loop.run_in_executor(None, partial)
+            await self.add_video(result, message)
+            return True
+
         partial = functools.partial(self.ytdl.extract_info, "ytsearch5: {}".format(search_str), download=False, process=False)
         results = await self.client.loop.run_in_executor(None, partial)
         results = list(results['entries'])
@@ -104,8 +113,9 @@ class PlayCommand(Command):
         if video is None:
             return
 
-        print(video)
+        await self.add_video(video, message)
 
+    async def add_video(self, video: dict, message: discord.Message):
         # Streaming video
         if video['duration'] is None:
             await message.channel.send("해당 영상은 재생할 수 없습니다.")
@@ -113,14 +123,20 @@ class PlayCommand(Command):
 
         await self.client.try_to_connect_player(message.guild, message.author, message.channel)
 
-        query_message, response_message = self.get_query_and_response_messages(message.author)
-        await query_message.delete()
-        await response_message.edit(content="", embed=self.create_embed(message.author, video))
+        if self.has_queried(message.author):
+            query_message, response_message = self.get_query_and_response_messages(message.author)
+            await query_message.delete()
+            await response_message.edit(content="", embed=self.create_embed(message.author, video))
+        else:
+            await message.channel.send(embed=self.create_embed(message.author, video))
+
         await message.delete()
 
         player = self.client.get_player(message.guild)
         if player.is_connected():
-            player.get_music_queue().add_music(YoutubeMusic(self.ytdl, "https://www.youtube.com/watch?v={}".format(video['id']), video['title'], int(video['duration'])))
+            player.get_music_queue().add_music(
+                YoutubeMusic(self.ytdl, "https://www.youtube.com/watch?v={}".format(video['id']), video['title'],
+                             int(video['duration'])))
 
             if not player.is_playing_music():
                 player.play_next_music()
