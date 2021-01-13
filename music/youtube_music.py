@@ -5,10 +5,10 @@ import discord
 import typing
 import youtube_dl
 
-import music
+from music.music import Music, MusicAudioSource
 
 
-class YoutubeMusic(music.Music):
+class YoutubeMusic(Music):
 
     def __init__(self, ytdl: youtube_dl.YoutubeDL, url: str, title: str, duration: int):
         super(YoutubeMusic, self).__init__(title, duration)
@@ -29,7 +29,7 @@ class YoutubeMusic(music.Music):
         print("Load URL =", best_url)
         print("Bitrate =", best_bitrate)
 
-        return music.MusicAudioSource(
+        return MusicAudioSource(
             self,
             discord.FFmpegPCMAudio(
                 best_url,
