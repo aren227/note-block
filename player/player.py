@@ -1,17 +1,25 @@
 import asyncio
+import random
 import traceback
 
 import discord
 import typing
 
+from bson import ObjectId
+
+from play_list import PlayList
 from player.mixer import Mixer
 from music.music import Music
 from music_queue import MusicQueue
 
+if typing.TYPE_CHECKING:
+    from client import NoteblockClient
+
 
 class Player:
 
-    def __init__(self, guild: discord.Guild, loop: asyncio.AbstractEventLoop):
+    def __init__(self, client: 'NoteblockClient', guild: discord.Guild, loop: asyncio.AbstractEventLoop):
+        self.client = client
         self.guild: discord.Guild = guild
         self.loop: asyncio.AbstractEventLoop = loop
 
@@ -21,6 +29,8 @@ class Player:
         self.mixer: typing.Optional[Mixer] = None
 
         self.voice_client: typing.Optional[discord.VoiceClient] = None
+
+        self.radio_mode: typing.Optional[ObjectId] = None
 
     def is_connected(self) -> bool:
         if self.voice_client is None:
@@ -86,5 +96,46 @@ class Player:
         else:
             self.clear_current_music()
 
+            if self.is_radio_mode():
+                self.fill_queue_with_playlist(self.radio_mode)
+
+                if len(self.music_queue.get_all_music()) > 0:
+                    self.play_next_music()
+
     def get_mixer(self) -> typing.Optional[Mixer]:
         return self.mixer
+
+    def is_radio_mode(self) -> bool:
+        return self.radio_mode is not None
+
+    def get_radio_playlist_title(self) -> typing.Optional[str]:
+        if not self.is_radio_mode():
+            return None
+
+        playlist = self.client.database.get_playlist(self.guild, self.radio_mode)
+        if playlist is None:
+            return None
+
+        return playlist.get_title()
+
+    def fill_queue_with_playlist(self, playlist_id: ObjectId, shuffle: bool = True):
+        playlist = self.client.database.get_playlist(self.guild, playlist_id)
+        if playlist is None:
+            self.set_radio_mode(None)
+
+        music = list(playlist.get_all_music())
+        if shuffle:
+            random.shuffle(music)
+
+        for m in music:
+            self.music_queue.add_music(m)
+
+    def set_radio_mode(self, playlist_id: typing.Optional[ObjectId]):
+        self.radio_mode = playlist_id
+
+        self.clear_current_music()
+        self.music_queue.clear()
+
+        if playlist_id is not None:
+            self.fill_queue_with_playlist(playlist_id)
+            self.play_next_music()

@@ -25,6 +25,9 @@ class MusicQueue:
             return None
         return self.queue.pop(0)
 
+    def clear(self):
+        self.queue = []
+
     def get_remaining_time(self) -> int:
         total_time = 0
         for music in self.queue:

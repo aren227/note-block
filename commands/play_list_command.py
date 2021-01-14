@@ -59,7 +59,7 @@ class PlayListCommand(Command):
 
         elif args[0] == "use":
             if len(args) == 1 or len(" ".join(args[1:])) == 0:
-                await message.channel.send("플레이리스트의 이름을 입력해주세요.")
+                await message.channel.send("플레이리스트의 이름을 입력해주세요. **;l**로 모든 플레이리스트를 확인할 수 있습니다.")
                 return True
 
             title = " ".join(args[1:])
@@ -92,7 +92,7 @@ class PlayListCommand(Command):
             # TODO: Duplicate play_command.py
             # Add to queue directly
             if search_str.startswith("https://www.youtube.com/watch?v="):
-                vid = re.search(r'v=([0-9a-zA-Z]+)', search_str).group(1)
+                vid = re.search(r'v=([_\-0-9a-zA-Z]+)', search_str).group(1)
                 partial = functools.partial(ytdl.extract_info, vid, download=False, process=False)
                 result = await self.client.loop.run_in_executor(None, partial)
                 await self.add_video_to_playlist(result, message.author, message.channel)
@@ -182,8 +182,15 @@ class PlayListCommand(Command):
             await channel.send("먼저 **;l use [이름]**으로 플레이리스트를 선택해주세요.")
             return True
 
-        playlist.add_music(YoutubeMusic(video['id'], video['title'], int(video['duration'])))
+        music = YoutubeMusic(video['id'], video['title'], int(video['duration']))
+
+        playlist.add_music(music)
         self.client.playlist_manager.update_playlist(playlist)
+
+        if self.client.guild_has_player(member.guild):
+            player = self.client.get_player(member.guild)
+            if player.is_radio_mode() and player.radio_mode == playlist.db_id:
+                player.music_queue.add_music(music)
 
         await channel.send(embed=self.create_embed(member, video, playlist))
 
@@ -197,4 +204,3 @@ class PlayListCommand(Command):
         self.client.playlist_manager.update_playlist(playlist)
 
         await channel.send("플레이리스트 **[{}]**애서 **{}**가 삭제되었습니다.".format(playlist.get_title(), music.get_title()))
-

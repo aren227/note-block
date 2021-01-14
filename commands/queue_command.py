@@ -24,7 +24,11 @@ class QueueCommand(Command):
         return ";q : 대기중인 모든 음악을 확인합니다."
 
     def get_queue_message(self, player: Player) -> str:
-        msg = "**{}**곡 대기 중, 남은 재생 시간 **[{}]**".format(len(player.get_music_queue().get_all_music()), time_format.time_digits(player.get_total_time_left()))
+        msg = ""
+        if player.is_radio_mode():
+            msg += "📻 플레이리스트 **[{}]**\n".format(player.get_radio_playlist_title())
+
+        msg += "**{}**곡 대기 중, 남은 재생 시간 **[{}]**".format(len(player.get_music_queue().get_all_music()), time_format.time_digits(player.get_total_time_left()))
         if player.is_playing_music():
             msg += "\n▶ {} [{}/{}]".format(player.get_current_music().get_title(),
                                            time_format.time_digits(int(player.get_current_music().get_play_time())),

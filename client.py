@@ -11,6 +11,7 @@ from commands.play_command import PlayCommand
 from commands.play_list_command import PlayListCommand
 from commands.play_playlist_command import PlayPlaylistCommand
 from commands.queue_command import QueueCommand
+from commands.radio_command import RadioCommand
 from database import Database
 from player.player import Player
 from commands.skip_command import SkipCommand
@@ -35,6 +36,7 @@ class NoteblockClient(discord.Client):
         self.register_command(HelpCommand(self))
         self.register_command(PlayListCommand(self))
         self.register_command(PlayPlaylistCommand(self))
+        self.register_command(RadioCommand(self))
 
         self.database = Database(self)
 
@@ -48,7 +50,7 @@ class NoteblockClient(discord.Client):
         return guild in self.players
 
     def create_player(self, guild: discord.Guild):
-        self.players[guild] = Player(guild, self.loop)
+        self.players[guild] = Player(self, guild, self.loop)
 
     def get_player(self, guild: discord.Guild) -> Player:
         return self.players[guild]

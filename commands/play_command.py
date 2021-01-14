@@ -46,11 +46,19 @@ class PlayCommand(Command):
         if len(args) == 0:
             return False
 
+        if self.client.guild_has_player(message.guild):
+            player = self.client.get_player(message.guild)
+            if player.is_radio_mode():
+                await message.channel.send("라디오 모드에서는 명령어 **;p**를 통해 곡을 추가할 수 없습니다.\n"
+                                           "**;l add**로 현재 재생중인 플레이리스트에 곡을 추가해주세요.\n"
+                                           "현재 재생중인 플레이리스트는 **[{}]**입니다.".format(player.get_radio_playlist_title()))
+                return True
+
         search_str = " ".join(args)
 
         # Add to queue directly
         if search_str.startswith("https://www.youtube.com/watch?v="):
-            vid = re.search(r'v=([0-9a-zA-Z]+)', search_str).group(1)
+            vid = re.search(r'v=([_\-0-9a-zA-Z]+)', search_str).group(1)
             partial = functools.partial(ytdl.extract_info, vid, download=False, process=False)
             result = await self.client.loop.run_in_executor(None, partial)
             await self.add_video(result, message.author, message.channel)
@@ -73,12 +81,16 @@ class PlayCommand(Command):
 
         await self.client.try_to_connect_player(channel.guild, member, channel)
 
-        await channel.send(embed=self.create_embed(member, video))
-
         player = self.client.get_player(channel.guild)
         if player.is_connected():
+            if player.is_radio_mode():
+                await channel.send("라디오 모드에서는 **;l add**를 사용해서 플레이리스트에 직접 추가해주세요.")
+                return
+
             player.get_music_queue().add_music(
                 YoutubeMusic(video['id'], video['title'], int(video['duration'])))
 
             if not player.is_playing_music():
                 player.play_next_music()
+
+            await channel.send(embed=self.create_embed(member, video))
