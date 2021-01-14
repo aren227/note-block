@@ -3,35 +3,19 @@ import asyncio
 import discord
 import typing
 
-import youtube_dl
-
 from commands.command import Command
 from commands.earrape_command import EarrapeCommand
 from commands.help_command import HelpCommand
 from commands.ping_command import PingCommand
 from commands.play_command import PlayCommand
 from commands.play_list_command import PlayListCommand
+from commands.play_playlist_command import PlayPlaylistCommand
 from commands.queue_command import QueueCommand
 from database import Database
 from player.player import Player
 from commands.skip_command import SkipCommand
+from playlist_manager import PlayListManager
 from selector import Selector
-
-ytdl = youtube_dl.YoutubeDL({
-    'format': 'bestaudio/best',
-    'extractaudio': True,
-    'audioformat': 'mp3',
-    'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
-    'restrictfilenames': True,
-    'noplaylist': True,
-    'nocheckcertificate': True,
-    'ignoreerrors': False,
-    'logtostderr': False,
-    'quiet': True,
-    'no_warnings': True,
-    'default_search': 'auto',
-    'source_address': '0.0.0.0',
-})
 
 
 class NoteblockClient(discord.Client):
@@ -50,10 +34,13 @@ class NoteblockClient(discord.Client):
         self.register_command(PingCommand(self))
         self.register_command(HelpCommand(self))
         self.register_command(PlayListCommand(self))
+        self.register_command(PlayPlaylistCommand(self))
 
         self.database = Database(self)
 
         self.selector = Selector(self)
+
+        self.playlist_manager = PlayListManager(self, self.database)
 
         # self.player_task = self.loop.create_task(self.player_task())
 

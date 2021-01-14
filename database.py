@@ -1,6 +1,7 @@
 import typing
 
 import discord
+from bson import ObjectId
 from pymongo import MongoClient
 
 from music.music import Music
@@ -65,7 +66,16 @@ class Database:
             'title': 1,
             'playlist_length': 1
         })
-        return results
+        return list(results)
+
+    def get_playlist(self, guild: discord.Guild, _id: ObjectId) -> typing.Optional[PlayList]:
+        result = self.database.noteblock.playlist.find_one({
+            '_id': _id
+        })
+        if result is None:
+            return None
+
+        return self.create_playlist_from_dict(guild, result)
 
     def add_playlist(self, playlist: PlayList):
         db_id = self.database.noteblock.playlist.insert_one(self.get_dict_from_playlist(playlist)).inserted_id

@@ -4,7 +4,7 @@ import typing
 from music.music import Music
 
 if typing.TYPE_CHECKING:
-    from player import Player
+    from player.player import Player
 
 
 class MusicQueue:

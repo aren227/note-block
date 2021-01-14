@@ -29,13 +29,14 @@ class Selector:
         # No need to query
         if len(str_list) == 1:
             await callback(data_list[0], member, channel)
+            return
 
         if guild not in self.guilds:
             self.guilds[guild] = {}
 
         msg = ""
         for i in range(len(str_list)):
-            msg += "**{}*. {}\n".format(i + 1, str_list[i])
+            msg += "**{}**. {}\n".format(i + 1, str_list[i])
         msg += hint
 
         query_message = await channel.send(msg)

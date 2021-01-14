@@ -5,7 +5,7 @@ import discord
 import typing
 import youtube_dl
 
-from client import ytdl
+from ytdl import ytdl
 from music.music import Music
 
 

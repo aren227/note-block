@@ -7,9 +7,10 @@ import re
 from utils import time_format
 from commands.command import Command
 from music.youtube_music import YoutubeMusic
+from ytdl import ytdl
 
 if typing.TYPE_CHECKING:
-    from client import NoteblockClient, ytdl
+    from client import NoteblockClient
 
 
 class PlayCommand(Command):
@@ -59,9 +60,9 @@ class PlayCommand(Command):
         results = await self.client.loop.run_in_executor(None, partial)
         results = list(results['entries'])
 
-        self.client.selector.query_to_member(message.guild, message.author, [video['title'] for video in results],
-                                             results, self.add_video, message.channel,
-                                             "재생을 원하는 영상의 번호를 입력해주세요.")
+        await self.client.selector.query_to_member(message.guild, message.author, [video['title'] for video in results],
+                                                   results, self.add_video, message.channel,
+                                                   "재생을 원하는 영상의 번호를 입력해주세요.")
         return True
 
     async def add_video(self, video: dict, member: discord.Member, channel: discord.TextChannel):

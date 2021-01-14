@@ -26,6 +26,14 @@ class PlayList:
                 return music
         return None
 
+    def search_music(self, title: str) -> typing.List[Music]:
+        results = []
+        title = title.lower()
+        for music in self.play_list:
+            if title in music.get_title().lower():
+                results.append(music)
+        return results
+
     def delete_music(self, music_id: str):
         for i in range(len(self.play_list)):
             if self.play_list[i].get_id() == music_id:
