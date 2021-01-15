@@ -3,6 +3,7 @@ import asyncio
 import discord
 import typing
 
+from commands.clock_command import ClockCommand
 from commands.command import Command
 from commands.earrape_command import EarrapeCommand
 from commands.help_command import HelpCommand
@@ -37,6 +38,7 @@ class NoteblockClient(discord.Client):
         self.register_command(PlayListCommand(self))
         self.register_command(PlayPlaylistCommand(self))
         self.register_command(RadioCommand(self))
+        self.register_command(ClockCommand(self))
 
         self.database = Database(self)
 
@@ -44,7 +46,7 @@ class NoteblockClient(discord.Client):
 
         self.playlist_manager = PlayListManager(self, self.database)
 
-        # self.player_task = self.loop.create_task(self.player_task())
+        self.player_task = self.loop.create_task(self.player_task())
 
     def guild_has_player(self, guild: discord.Guild) -> bool:
         return guild in self.players
@@ -88,10 +90,8 @@ class NoteblockClient(discord.Client):
 
         await self.selector.on_message(message)
 
-    """
     async def player_task(self):
         while not self.is_closed():
-            features = [asyncio.ensure_future(self.players[key].try_to_play_music()) for key in self.players]
-            await asyncio.gather(*features)
+            for key in self.players:
+                self.players[key].process_scheduled_audio()
             await asyncio.sleep(0.5)
-    """

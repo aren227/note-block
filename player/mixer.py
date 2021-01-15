@@ -26,6 +26,7 @@ class Mixer(Thread):
         """Add default layers"""
         self.add_layer(Layer(self, "MUSIC", 1))
         self.add_layer(Layer(self, "EMOJI", 5))
+        self.add_layer(Layer(self, "SFX", 5))
 
     def _read(self) -> typing.Tuple[bytes, bool]:
         # At least one layer is playing

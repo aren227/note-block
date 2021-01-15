@@ -1,16 +1,21 @@
 import asyncio
 import random
 import traceback
+from datetime import datetime, timedelta
+from math import ceil
 
 import discord
 import typing
 
 from bson import ObjectId
 
+from music.clock_sfx import ClockSfx
 from play_list import PlayList
+from player.clock_alert_scheduler import ClockAlertScheduler
 from player.mixer import Mixer
 from music.music import Music
 from music_queue import MusicQueue
+from player.scheduled_audio import ScheduledAudio
 
 if typing.TYPE_CHECKING:
     from client import NoteblockClient
@@ -31,6 +36,8 @@ class Player:
         self.voice_client: typing.Optional[discord.VoiceClient] = None
 
         self.radio_mode: typing.Optional[ObjectId] = None
+
+        self.scheduled_audio: typing.List[ScheduledAudio] = []
 
     def is_connected(self) -> bool:
         if self.voice_client is None:
@@ -139,3 +146,27 @@ class Player:
         if playlist_id is not None:
             self.fill_queue_with_playlist(playlist_id)
             self.play_next_music()
+
+    def add_scheduled_audio(self, scheduled_audio: ScheduledAudio):
+        self.scheduled_audio.append(scheduled_audio)
+
+    def process_scheduled_audio(self):
+        now = datetime.now()
+        for i in range(len(self.scheduled_audio) - 1, -1, -1):
+            if now >= self.scheduled_audio[i].start_time:
+                self.scheduled_audio[i].audio.start()
+                self.mixer.add_audio_source('SFX', self.scheduled_audio[i].audio)
+
+                if not self.scheduled_audio[i].is_repeating():
+                    self.scheduled_audio.pop(i)
+
+    def add_next_clock_alert(self):
+        self.add_scheduled_audio(ClockAlertScheduler())
+
+    def set_clock_alert(self, alert: bool):
+        for i in range(len(self.scheduled_audio) - 1, -1, -1):
+            if isinstance(self.scheduled_audio[i], ClockAlertScheduler):
+                self.scheduled_audio.pop(i)
+
+        if alert:
+            self.add_next_clock_alert()
