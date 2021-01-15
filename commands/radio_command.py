@@ -33,7 +33,7 @@ class RadioCommand(Command):
                 await message.channel.send("📻 라디오 모드를 종료합니다.")
             return True
 
-        title = " ".join(args[1:])
+        title = " ".join(args[0:])
 
         playlists = self.client.database.get_playlists(message.guild, title)
 

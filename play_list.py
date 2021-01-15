@@ -38,6 +38,7 @@ class PlayList:
         for i in range(len(self.play_list)):
             if self.play_list[i].get_id() == music_id:
                 self.play_list.pop(i)
+                break
 
     def get_all_music(self) -> typing.List[Music]:
         return self.play_list
