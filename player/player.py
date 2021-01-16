@@ -59,8 +59,25 @@ class Player:
 
         self.voice_client.encoder = encoder
 
-        self.mixer = Mixer(self)
+        self.mixer = self.create_mixer()
         self.mixer.start()
+
+    async def try_reconnect(self):
+        # Something went wrong
+        if self.mixer is not None and self.voice_client is not None and not self.mixer.is_alive() and self.voice_client.is_connected():
+            print("Restart mixer...")
+            self.mixer = self.create_mixer()
+            self.mixer.start()
+
+    # Allows to resume
+    def create_mixer(self) -> Mixer:
+        if self.mixer is None:
+            return Mixer(self)
+        prev_mixer = self.mixer
+        mixer = Mixer(self)
+        mixer.earrape = prev_mixer.earrape
+        mixer.layers = prev_mixer.layers
+        return mixer
 
     async def disconnect(self):
         await self.voice_client.disconnect()

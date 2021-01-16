@@ -94,4 +94,6 @@ class NoteblockClient(discord.Client):
         while not self.is_closed():
             for key in self.players:
                 self.players[key].process_scheduled_audio()
-            await asyncio.sleep(0.5)
+                await self.players[key].try_reconnect()
+
+            await asyncio.sleep(0.25)
