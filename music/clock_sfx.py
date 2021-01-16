@@ -4,7 +4,7 @@ from music.buffered_audio import BufferedAudio
 
 
 def get_delay() -> float:
-    return 6.48 + 3
+    return 6.48
 
 
 class ClockSfx(BufferedAudio):
