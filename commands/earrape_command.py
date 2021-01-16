@@ -19,18 +19,21 @@ class EarrapeCommand(Command):
         pass
 
     def get_help(self) -> str:
-        return ";e : 시도하지 마세요."
+        return ";e [on/off] : 시도하지 마세요."
 
     async def execute(self, message: discord.Message, args: typing.List[str]):
+        if len(args) != 1 or args[0] not in ('on', 'off'):
+            return False
+
         if not self.client.guild_has_player(message.guild):
             await message.channel.send("재생 중인 음악이 없습니다.")
             return True
 
         player = self.client.get_player(message.guild)
-        if player.get_mixer().is_earraped():
-            player.get_mixer().set_earrape(False)
-            await message.channel.send("E A R R A P E   **O F F**")
-        else:
+        if args[0] == 'on':
             player.get_mixer().set_earrape(True)
             await message.channel.send("E A R R A P E   **O N**")
+        else:
+            player.get_mixer().set_earrape(False)
+            await message.channel.send("E A R R A P E   **O F F**")
         return True
