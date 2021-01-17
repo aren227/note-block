@@ -27,6 +27,8 @@ class SoundEmoji:
 
     def get_audio_file(self, guild: discord.Guild, emoji_id: int) -> typing.Optional[str]:
         path = self.get_folder_path(guild, emoji_id)
+        if not os.path.exists(path):
+            return None
         files = os.listdir(path)
         print(files)
         if len(files) == 0:
