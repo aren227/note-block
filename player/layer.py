@@ -29,6 +29,9 @@ class Layer:
 
         self.audio_sources.append(audio_source)
 
+    def delete_audio_source(self, audio_source: BufferedAudio):
+        self.audio_sources.remove(audio_source)
+
     def clear_audio_sources(self):
         self.audio_sources.clear()
 

@@ -109,7 +109,15 @@ class NoteblockClient(discord.Client):
                 if path is not None:
                     sfx = SoundFile(path)
                     sfx.start()
-                    player.get_mixer().add_audio_source("SFX", sfx)
+
+                    layer = player.get_mixer().layers['EMOJI']
+
+                    for sound in layer.audio_sources:
+                        if isinstance(sound, SoundFile) and sound.path == path:
+                            layer.delete_audio_source(sound)
+                            break
+
+                    layer.add_audio_source(sfx)
 
         await self.selector.on_message(message)
 
