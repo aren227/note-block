@@ -18,7 +18,7 @@ class SoundEmoji:
         os.makedirs(path, exist_ok=True)
 
         for file in os.listdir(path):
-            os.remove(file)
+            os.remove(path + "/" + file)
 
         await audio_file.save(open(path + "/" + audio_file.filename, 'wb'))
 
