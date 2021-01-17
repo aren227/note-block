@@ -1,4 +1,5 @@
 import asyncio
+import re
 
 import discord
 import typing
@@ -14,10 +15,12 @@ from commands.play_playlist_command import PlayPlaylistCommand
 from commands.queue_command import QueueCommand
 from commands.radio_command import RadioCommand
 from database import Database
+from music.sound_file import SoundFile
 from player.player import Player
 from commands.skip_command import SkipCommand
 from playlist_manager import PlayListManager
 from selector import Selector
+from sound_emoji import SoundEmoji
 
 
 class NoteblockClient(discord.Client):
@@ -45,6 +48,8 @@ class NoteblockClient(discord.Client):
         self.selector = Selector(self)
 
         self.playlist_manager = PlayListManager(self, self.database)
+
+        self.sound_emoji = SoundEmoji()
 
         self.player_task = self.loop.create_task(self.player_task())
 
@@ -87,6 +92,24 @@ class NoteblockClient(discord.Client):
                 success = await self.commands[base].execute(message, spl[1:])
                 if not success:
                     await message.channel.send(self.commands[base].get_help())
+            return
+
+        if len(message.attachments) > 0:
+            emoji_id = self.sound_emoji.is_fully_emoji(message.content)
+            if emoji_id is not None:
+                await self.sound_emoji.register(message.guild, emoji_id, message.attachments[0])
+                await message.channel.send("이모지 {}에 대한 소리가 등록되었습니다.".format(message.content))
+                return
+
+        if self.guild_has_player(message.guild):
+            player = self.get_player(message.guild)
+            emojis = self.sound_emoji.get_distinct_emojis(message.content)[:5]
+            for emoji_id in emojis:
+                path = self.sound_emoji.get_audio_file(message.guild, emoji_id)
+                if path is not None:
+                    sfx = SoundFile(path)
+                    sfx.start()
+                    player.get_mixer().add_audio_source("SFX", sfx)
 
         await self.selector.on_message(message)
 
