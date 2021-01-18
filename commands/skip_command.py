@@ -13,13 +13,13 @@ class SkipCommand(Command):
         super().__init__(client)
 
     def get_base_command(self) -> str:
-        return "s"
+        return "skip"
 
     def get_alias(self):
-        pass
+        return "s"
 
     def get_help(self) -> str:
-        return ";s : 현재 재생되고 있는 음악을 건너뜁니다."
+        return ";**s**kip : 현재 재생되고 있는 음악을 건너뜁니다."
 
     async def execute(self, message: discord.Message, args: typing.List[str]):
         if not self.client.guild_has_player(message.guild):

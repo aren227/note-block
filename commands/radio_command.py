@@ -14,13 +14,13 @@ class RadioCommand(Command):
         super().__init__(client)
 
     def get_base_command(self) -> str:
-        return "r"
+        return "radio"
 
     def get_alias(self):
-        pass
+        return "r"
 
     def get_help(self) -> str:
-        return ";r [이름/off] : 플레이리스트로 라디오 모드를 설정합니다."
+        return ";**r**adio [이름/off] : 플레이리스트로 라디오 모드를 설정하거나 라디오 모드를 종료합니다."
 
     async def execute(self, message: discord.Message, args: typing.List[str]):
         if len(args) == 0:

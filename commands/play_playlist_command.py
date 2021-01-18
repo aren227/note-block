@@ -13,13 +13,13 @@ class PlayPlaylistCommand(Command):
         super().__init__(client)
 
     def get_base_command(self) -> str:
-        return "pl"
+        return "playlist"
 
     def get_alias(self):
-        pass
+        return "pl"
 
     def get_help(self) -> str:
-        return ";pl [이름] : 플레이리스트의 모든 음악을 재생 대기열에 추가합니다."
+        return ";**p**lay**l**ist [이름] : 플레이리스트의 모든 음악을 재생 대기열에 추가합니다."
 
     async def execute(self, message: discord.Message, args: typing.List[str]):
         if len(args) == 0:

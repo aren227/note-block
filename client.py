@@ -75,6 +75,8 @@ class NoteblockClient(discord.Client):
 
     def register_command(self, command: Command):
         self.commands[command.get_base_command()] = command
+        if command.get_alias() is not None:
+            self.commands[command.get_alias()] = command
 
     def get_commands(self) -> typing.List[Command]:
         return list(self.commands.values())

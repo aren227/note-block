@@ -19,10 +19,13 @@ class PlayCommand(Command):
         super().__init__(client)
 
     def get_base_command(self) -> str:
+        return "play"
+
+    def get_alias(self):
         return "p"
 
     def get_help(self) -> str:
-        return ";p [검색어/링크] : 유튜브에서 영상을 검색한 뒤 음악을 재생합니다."
+        return ";**p**lay [검색어/링크] : 유튜브에서 영상을 검색한 뒤 음악을 재생합니다."
 
     def create_embed(self, member: discord.Member, video: dict) -> discord.Embed:
         embed = discord.Embed(title=video['title'], url="https://www.youtube.com/watch?v={}".format(video['id']))
@@ -49,8 +52,8 @@ class PlayCommand(Command):
         if self.client.guild_has_player(message.guild):
             player = self.client.get_player(message.guild)
             if player.is_radio_mode():
-                await message.channel.send("라디오 모드에서는 명령어 **;p**를 통해 곡을 추가할 수 없습니다.\n"
-                                           "**;l add**로 현재 재생중인 플레이리스트에 곡을 추가해주세요.\n"
+                await message.channel.send("라디오 모드에서는 명령어 **;play**를 통해 곡을 추가할 수 없습니다.\n"
+                                           "**;list add**로 현재 재생중인 플레이리스트에 곡을 추가하거나 **;radio off**로 라디오 모드를 종료해주세요.\n"
                                            "현재 재생중인 플레이리스트는 **[{}]**입니다.".format(player.get_radio_playlist_title()))
                 return True
 
@@ -84,7 +87,7 @@ class PlayCommand(Command):
         player = self.client.get_player(channel.guild)
         if player.is_connected():
             if player.is_radio_mode():
-                await channel.send("라디오 모드에서는 **;l add**를 사용해서 플레이리스트에 직접 추가해주세요.")
+                await channel.send("라디오 모드에서는 **;list add**를 사용해서 플레이리스트에 직접 추가해주세요.")
                 return
 
             player.get_music_queue().add_music(

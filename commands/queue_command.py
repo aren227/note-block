@@ -15,13 +15,13 @@ class QueueCommand(Command):
         super().__init__(client)
 
     def get_base_command(self) -> str:
-        return "q"
+        return "queue"
 
     def get_alias(self):
-        pass
+        return "q"
 
     def get_help(self) -> str:
-        return ";q : 대기중인 모든 음악을 확인합니다."
+        return ";**q**ueue : 대기중인 모든 음악을 확인합니다."
 
     def get_queue_message(self, player: Player) -> str:
         msg = ""
@@ -35,7 +35,7 @@ class QueueCommand(Command):
                                            time_format.time_digits(player.get_current_music().get_duration()))
 
         musics = player.get_music_queue().get_all_music()
-        for i in range(min(7, len(musics))):
+        for i in range(min(8, len(musics))):
             msg += "\n- {} [{}]".format(musics[i].get_title(),
                                         time_format.time_digits(musics[i].get_duration()))
 

@@ -21,16 +21,19 @@ class PlayListCommand(Command):
         super().__init__(client)
 
     def get_base_command(self) -> str:
+        return "list"
+
+    def get_alias(self):
         return "l"
 
     def get_help(self) -> str:
-        return ";l new [이름] : 새로운 플레이리스트를 생성하고 생성된 플레이리스트를 __사용중__으로 설정합니다.\n" \
-               ";l use [이름] : 해당 플레이리스트를 __사용중__으로 설정합니다." \
-               ";l add [검색어/링크] : 유튜브에서 영상을 검색한 뒤 __사용중__인 플레이리스트에 추가합니다.\n" \
-               ";l delete [검색어/링크] : __사용중__인 플레이리스트에서 음악을 제거합니다.\n" \
-               ";l delete : __사용중__인 플레이리스트를 제거합니다.\n" \
-               ";l q : 사용중인 플레이리스트의 곡 목록을 확인합니다.\n" \
-               ";l : 모든 플레이리스트와 사용중인 플레이리스트를 확인합니다."
+        return ";**l**ist new [이름] : 새로운 플레이리스트를 생성하고 생성된 플레이리스트를 __사용중__으로 설정합니다.\n" \
+               ";**l**ist use [이름] : 해당 플레이리스트를 __사용중__으로 설정합니다." \
+               ";**l**ist add [검색어/링크] : 유튜브에서 영상을 검색한 뒤 __사용중__인 플레이리스트에 추가합니다.\n" \
+               ";**l**ist delete [검색어/링크] : __사용중__인 플레이리스트에서 음악을 제거합니다.\n" \
+               ";**l**ist delete : __사용중__인 플레이리스트를 제거합니다.\n" \
+               ";**l**ist q : 사용중인 플레이리스트의 곡 목록을 확인합니다.\n" \
+               ";**l**ist : 모든 플레이리스트와 사용중인 플레이리스트를 확인합니다."
 
     async def execute(self, message: discord.Message, args: typing.List[str]) -> bool:
         if len(args) == 0:
@@ -42,7 +45,7 @@ class PlayListCommand(Command):
             if playlist is not None:
                 msg += " 사용중인 플레이리스트: **[{}]**".format(playlist.get_title())
 
-            for i in range(min(7, len(results))):
+            for i in range(min(8, len(results))):
                 msg += "\n{}. **{}** [{}곡]".format(i + 1, results[i]['title'], results[i]['playlist_length'])
 
             await message.channel.send(msg)
@@ -59,7 +62,7 @@ class PlayListCommand(Command):
 
         elif args[0] == "use":
             if len(args) == 1 or len(" ".join(args[1:])) == 0:
-                await message.channel.send("플레이리스트의 이름을 입력해주세요. **;l**로 모든 플레이리스트를 확인할 수 있습니다.")
+                await message.channel.send("플레이리스트의 이름을 입력해주세요. **;list**로 모든 플레이리스트를 확인할 수 있습니다.")
                 return True
 
             title = " ".join(args[1:])
@@ -84,7 +87,7 @@ class PlayListCommand(Command):
                 return True
 
             if playlist is None:
-                await message.channel.send("먼저 **;l use [이름]**으로 플레이리스트를 선택해주세요.")
+                await message.channel.send("선택된 플레이리스트가 없습니다. 먼저 **;list use [이름]**으로 플레이리스트를 선택해주세요.")
                 return True
 
             search_str = " ".join(args[1:])
@@ -110,7 +113,7 @@ class PlayListCommand(Command):
         elif args[0] == "delete":
             playlist = self.client.playlist_manager.get_member_playlist(message.author)
             if playlist is None:
-                await message.channel.send("먼저 **;l use [이름]**으로 플레이리스트를 선택해주세요.")
+                await message.channel.send("선택된 플레이리스트가 없습니다. 먼저 **;list use [이름]**으로 플레이리스트를 선택해주세요.")
                 return True
 
             if len(args) == 1:
@@ -132,7 +135,7 @@ class PlayListCommand(Command):
         elif args[0] == "q":
             playlist = self.client.playlist_manager.get_member_playlist(message.author)
             if playlist is None:
-                await message.channel.send("먼저 **;l use [이름]**으로 플레이리스트를 선택해주세요.")
+                await message.channel.send("선택된 플레이리스트가 없습니다. 먼저 **;list use [이름]**으로 플레이리스트를 선택해주세요.")
                 return True
 
             msg = "플레이리스트 **[{}]**, 총 {}곡 [{}]".format(playlist.get_title(), len(playlist.get_all_music()), time_format.time_digits(playlist.get_play_time()))
@@ -179,7 +182,7 @@ class PlayListCommand(Command):
 
         playlist = self.client.playlist_manager.get_member_playlist(member)
         if playlist is None:
-            await channel.send("먼저 **;l use [이름]**으로 플레이리스트를 선택해주세요.")
+            await channel.send("선택된 플레이리스트가 업습니다. 먼저 **;list use [이름]**으로 플레이리스트를 선택해주세요.")
             return True
 
         music = YoutubeMusic(video['id'], video['title'], int(video['duration']))
@@ -197,10 +200,10 @@ class PlayListCommand(Command):
     async def delete_video_in_playlist(self, music: Music, member: discord.Member, channel: discord.TextChannel):
         playlist = self.client.playlist_manager.get_member_playlist(member)
         if playlist is None:
-            await channel.send("먼저 **;l use [이름]**으로 플레이리스트를 선택해주세요.")
+            await channel.send("선택된 플레이리스트가 없습니다. 먼저 **;list use [이름]**으로 플레이리스트를 선택해주세요.")
             return True
 
         playlist.delete_music(music.get_id())
         self.client.playlist_manager.update_playlist(playlist)
 
-        await channel.send("플레이리스트 **[{}]**애서 **{}**가 삭제되었습니다.".format(playlist.get_title(), music.get_title()))
+        await channel.send("플레이리스트 **[{}]**에서 **{}**가 삭제되었습니다.".format(playlist.get_title(), music.get_title()))

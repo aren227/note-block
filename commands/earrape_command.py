@@ -13,13 +13,13 @@ class EarrapeCommand(Command):
         super().__init__(client)
 
     def get_base_command(self) -> str:
-        return "e"
+        return "earrape"
 
     def get_alias(self):
-        pass
+        return "e"
 
     def get_help(self) -> str:
-        return ";e [on/off] : 시도하지 마세요."
+        return ";**e**arrape [on/off] : 시도하지 마세요."
 
     async def execute(self, message: discord.Message, args: typing.List[str]):
         if len(args) != 1 or args[0] not in ('on', 'off'):
