@@ -25,5 +25,6 @@ class SoundEmojiCommand(Command):
         emojis = self.client.sound_emoji.get_supported_emojis(message.guild)
         msg = "총 {}개의 이모지에 소리가 등록되었습니다.\n".format(len(emojis))
         for emoji_id in emojis:
-            msg += self.client.get_emoji(emoji_id) + " "
+            msg += str(self.client.get_emoji(emoji_id)) + " "
         await message.channel.send(msg)
+        return True
