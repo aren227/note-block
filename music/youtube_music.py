@@ -18,12 +18,18 @@ class YoutubeMusic(Music):
     def _create_audio_source(self) -> discord.AudioSource:
         processed_info = ytdl.extract_info("https://www.youtube.com/watch?v={}".format(self.video_id), download=False)
 
-        best_url = None
+        best = None
         best_bitrate = 0
         for fmt in processed_info['formats']:
             if 'audio only' in fmt['format'] and best_bitrate < fmt['abr']:
-                best_url = fmt['url']
+                best = fmt
                 best_bitrate = fmt['abr']
+
+        best_url = best['url']
+
+        # Extract base url
+        if 'format_note' in best and 'DASH' in best['format_note'] and 'fragment_base_url' in best:
+            best_url = best['fragment_base_url']
 
         print("Load URL =", best_url)
         print("Bitrate =", best_bitrate)
