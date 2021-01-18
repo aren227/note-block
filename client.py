@@ -14,6 +14,7 @@ from commands.play_list_command import PlayListCommand
 from commands.play_playlist_command import PlayPlaylistCommand
 from commands.queue_command import QueueCommand
 from commands.radio_command import RadioCommand
+from commands.sound_emoji_command import SoundEmojiCommand
 from database import Database
 from music.sound_file import SoundFile
 from player.player import Player
@@ -42,6 +43,7 @@ class NoteblockClient(discord.Client):
         self.register_command(PlayPlaylistCommand(self))
         self.register_command(RadioCommand(self))
         self.register_command(ClockCommand(self))
+        self.register_command(SoundEmojiCommand(self))
 
         self.database = Database(self)
 

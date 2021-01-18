@@ -35,6 +35,12 @@ class SoundEmoji:
             return None
         return path + "/" + files[0]
 
+    def get_supported_emojis(self, guild: discord.Guild) -> typing.List[int]:
+        results = []
+        for folder in os.listdir('./emoji_sounds/{}'.format(guild.id)):
+            results.append(int(folder))
+        return results
+
     def is_fully_emoji(self, content: str) -> typing.Optional[int]:
         match = emoji_regex.fullmatch(content)
         if match:
