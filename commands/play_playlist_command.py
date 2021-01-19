@@ -48,11 +48,11 @@ class PlayPlaylistCommand(Command):
         await self.client.try_to_connect_player(channel.guild, member, channel)
 
         player = self.client.get_player(member.guild)
-        for music in playlist.get_all_music():
-            player.get_music_queue().add_music(music)
+        if player.is_connected():
+            for music in playlist.get_all_music():
+                player.get_music_queue().add_music(music)
 
-        if not player.is_playing_music():
-            player.play_next_music()
+            if not player.is_playing_music():
+                player.play_next_music()
 
-        await channel.send("**[{}]**의 곡 **{}개**가 대기열에 추가되었습니다.".format(playlist.get_title(), len(playlist.get_all_music())))
-
+            await channel.send("**[{}]**의 곡 **{}개**가 대기열에 추가되었습니다.".format(playlist.get_title(), len(playlist.get_all_music())))

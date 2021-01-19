@@ -47,6 +47,8 @@ class Player:
     async def connect(self, voice_channel: discord.VoiceChannel):
         if self.guild != voice_channel.guild:
             raise ValueError("Can't connect to voice channel of different guild!")
+        if self.voice_client is not None:
+            await self.voice_client.disconnect(force=True)
         self.voice_client = await voice_channel.connect()
 
         # Inject custom encoder

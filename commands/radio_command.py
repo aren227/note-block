@@ -55,6 +55,6 @@ class RadioCommand(Command):
         await self.client.try_to_connect_player(channel.guild, member, channel)
 
         player = self.client.get_player(member.guild)
-        player.set_radio_mode(playlist.db_id)
-
-        await channel.send("📻 플레이리스트 **[{}]**로 라디오 모드를 시작합니다.".format(playlist.get_title()))
+        if player.is_connected():
+            player.set_radio_mode(playlist.db_id)
+            await channel.send("📻 플레이리스트 **[{}]**로 라디오 모드를 시작합니다.".format(playlist.get_title()))
