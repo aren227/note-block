@@ -48,6 +48,7 @@ class Player:
         if self.guild != voice_channel.guild:
             raise ValueError("Can't connect to voice channel of different guild!")
         if self.voice_client is not None:
+            print("Disconnect previous connection...")
             await self.voice_client.disconnect(force=True)
         self.voice_client = await voice_channel.connect()
 

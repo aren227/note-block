@@ -25,15 +25,23 @@ class Layer:
 
     def add_audio_source(self, audio_source: BufferedAudio):
         if len(self.audio_sources) >= self.max_audio_sources:
-            self.audio_sources.pop(0)
+            self.cleanup_audio_source(self.audio_sources.pop(0))
 
         self.audio_sources.append(audio_source)
 
     def delete_audio_source(self, audio_source: BufferedAudio):
         self.audio_sources.remove(audio_source)
+        self.cleanup_audio_source(audio_source)
 
     def clear_audio_sources(self):
+        for audio_source in self.audio_sources:
+            self.cleanup_audio_source(audio_source)
         self.audio_sources.clear()
+
+    def cleanup_audio_source(self, audio_source: BufferedAudio):
+        audio_source.finished = True
+        if audio_source.audio_source is not None:
+            audio_source.audio_source.cleanup()
 
     def read_buffer(self, buffer: np.ndarray) -> typing.Tuple[np.ndarray, bool]:
         # At least one audio is playing
@@ -44,7 +52,7 @@ class Layer:
 
             # Audio finished
             if buf is None:
-                self.audio_sources.pop(i)
+                self.cleanup_audio_source(self.audio_sources.pop(i))
                 self.mixer.audio_source_finished(self)
                 continue
 
